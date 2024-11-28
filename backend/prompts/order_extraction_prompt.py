@@ -10,17 +10,19 @@ email_summary: Summary of the email based on the subject and body
 invoice_id: ID of the Invoice
 order_id: ID of the Order
 purchase_order: Purchase Order Number for the invoice and order
-supplier.name: Supplier's Name
-supplier.email: Supplier's email
-supplier.phone: Supplier's Phone
-supplier.address: Supplier's Address
-buyer.name: buyer's Name
-buyer.email: buyer's email
-buyer.phone: buyer's Phone
-buyer.address: buyer's Address
 order_date: Date of the Order
 expected_delivery_date: Date of Expected Delivery
 order_value: Order Value in float
+supplier: Supplier Object with following attributes:
+    name: Supplier's Name
+    email: Supplier's email
+    phone: Supplier's Phone
+    address: Supplier's Address
+buyer: Buyer Object with following attributes:
+    name: buyer's Name
+    email: buyer's email
+    phone: buyer's Phone
+    address: buyer's Address
 line_items: Array of line items, where each object can have the following keys if present:
     item_name: Name of the item
     item_code: Code of the item

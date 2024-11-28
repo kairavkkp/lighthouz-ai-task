@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from routes.order_routes import order_bp
+from routes.order_email_thread_routes import order_email_thread_bp
 from settings import mongo_client, test_collection
 
 app = Flask(__name__)
@@ -36,6 +37,7 @@ def list_documents():
 
 
 app.register_blueprint(order_bp, url_prefix="/orders")
+app.register_blueprint(order_email_thread_bp, url_prefix="/order-email-threads")
 
 if __name__ == "__main__":
     app.run(debug=True)
