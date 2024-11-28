@@ -1,0 +1,45 @@
+{
+    "order_status": "Not Shipped yet. You'll receive updates after the items are ready to ship, shipped, and expected to be delivered.",
+    "email_summary": "Details about the invoice and order, including status, supplier information, buyer information, and line items.",
+    "invoice_id": "INV-3569",
+    "order_id": "ORD-9593",
+    "purchase_order": "PO-7137",
+    "supplier": {
+        "name": "King, Logan and Aguilar",
+        "email": "turnercourtney@bailey.com",
+        "phone": "809.714.1068",
+        "address": "3837 Frank Glens South Dylan, WY 36337"
+    },
+    "buyer": {
+        "name": "Julie Parker",
+        "email": "michael68@example.net",
+        "phone": "001-716-406-3469x5239",
+        "address": "085 Mitchell Dale Suite 545 Victoriaport, ME 21138"
+    },
+    "order_date": "2024-11-12",
+    "expected_delivery_date": "2024-12-10",
+    "order_value": 3789.37,
+    "line_items": [
+        {
+            "item_name": "Federal",
+            "item_code": "IT-494",
+            "quantity": 3,
+            "price_per_unit": 176.7,
+            "total_price": 530.1
+        },
+        {
+            "item_name": "Top",
+            "item_code": "IT-789",
+            "quantity": 7,
+            "price_per_unit": 291.61,
+            "total_price": 2041.27
+        },
+        {
+            "item_name": "Newspaper",
+            "item_code": "IT-610",
+            "quantity": 8,
+            "price_per_unit": 152.25,
+            "total_price": 1218.0
+        }
+    ]
+}

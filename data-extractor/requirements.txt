@@ -1,0 +1,4 @@
+boto3
+langchain-openai
+openai
+unstructured[pdf]
