@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 
+import { Link } from "react-router-dom";
+
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,13 @@ const OrderList = () => {
               {/* Left Side */}
               <div style={styles.leftColumn}>
                 <p style={styles.pTag}>
-                  <strong>Order ID:</strong> {order.order_id}
+                  <strong>Order ID:</strong> {" "}
+                  <Link
+                    to={`/orders/${order.order_id}`}
+                    style={{ textDecoration: "none", color: "#007BFF" }}
+                  >
+                    {order.order_id}
+                  </Link>{" "}
                 </p>
                 <p style={styles.pTag}>
                   <strong>Purchase Order:</strong> {order.purchase_order}
