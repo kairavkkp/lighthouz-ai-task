@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from routes.order_routes import order_bp
 from routes.order_email_thread_routes import order_email_thread_bp
 from settings import mongo_client, test_collection
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route("/")
@@ -36,8 +38,8 @@ def list_documents():
     return jsonify(documents)
 
 
-app.register_blueprint(order_bp, url_prefix="/orders")
-app.register_blueprint(order_email_thread_bp, url_prefix="/order-email-threads")
+app.register_blueprint(order_bp, url_prefix="/")
+app.register_blueprint(order_email_thread_bp, url_prefix="/")
 
 if __name__ == "__main__":
     app.run(debug=True)

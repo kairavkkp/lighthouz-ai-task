@@ -6,14 +6,14 @@ from background_tasks.orders import extract_data_for_order
 order_bp = Blueprint("order", __name__)
 
 
-@order_bp.route("/", methods=["GET"])
+@order_bp.route("/orders", methods=["GET", "OPTIONS"])
 def get_orders():
     # Fetch all documents from MongoDB
     documents = list(orders_collection.find({}, {"_id": 0}))
     return jsonify(documents)
 
 
-@order_bp.route("/", methods=["POST"])
+@order_bp.route("/orders", methods=["POST"])
 def add_order():
     """
     Data:
