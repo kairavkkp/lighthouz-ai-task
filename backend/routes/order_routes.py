@@ -13,6 +13,12 @@ def get_orders():
     return jsonify(documents)
 
 
+@order_bp.route("/orders/<order_id>", methods=["GET", "OPTIONS"])
+def get_order(order_id):
+    document = list(orders_collection.find({"order_id": order_id}, {"_id": 0}))[0]
+    return jsonify(document)
+
+
 @order_bp.route("/orders", methods=["POST"])
 def add_order():
     """

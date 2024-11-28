@@ -4,9 +4,39 @@ import React, { useCallback, useEffect, useState } from "react";
 const OrderEmailThread = () => {
   const { orderId } = useParams(); // Get order_id from the URL
   const [emails, setEmails] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [loadingEmails, setLoadingEmails] = useState(true);
+  const [loadingOrder, setLoadingOrder] = useState(true);
+  const [errorEmails, setErrorEmails] = useState(null);
+  const [errorOrder, setErrorOrder] = useState(null);
 
+  const fetchOrderDetails = useCallback(
+    async () => {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/orders/${orderId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setOrderDetails(data);
+      } catch (err) {
+        setErrorOrder(`Failed to fetch order details. Please try again later.`);
+      } finally {
+        setLoadingOrder(false);
+      }
+    },
+    [orderId]
+  );
   const fetchEmailThread = useCallback(
     async () => {
       try {
@@ -28,9 +58,11 @@ const OrderEmailThread = () => {
         const data = await response.json();
         setEmails(data);
       } catch (err) {
-        setError(`Failed to fetch email threads. Please try again later.`);
+        setErrorEmails(
+          `Failed to fetch email threads. Please try again later.`
+        );
       } finally {
-        setLoading(false);
+        setLoadingEmails(false);
       }
     },
     [orderId]
@@ -39,21 +71,65 @@ const OrderEmailThread = () => {
   useEffect(
     () => {
       fetchEmailThread();
+      fetchOrderDetails();
     },
-    [fetchEmailThread]
+    [fetchEmailThread, fetchOrderDetails]
   );
 
-  if (loading)
+  if (loadingEmails || loadingOrder)
     return <p style={{ textAlign: "center", padding: "20px" }}>Loading...</p>;
-  if (error)
+  if (errorOrder)
     return (
       <p style={{ textAlign: "center", color: "red", padding: "20px" }}>
-        {error}
+        {errorOrder}
+      </p>
+    );
+
+  if (errorEmails)
+    return (
+      <p style={{ textAlign: "center", color: "red", padding: "20px" }}>
+        {errorEmails}
       </p>
     );
 
   return (
     <div style={styles.container}>
+      <h1 style={styles.heading}>Order Details</h1>
+      {/* Order Details Section */}
+      {orderDetails &&
+        <div style={styles.orderCard}>
+          <div style={styles.gridContainer}>
+            {/* Left Side */}
+            <div style={styles.leftColumn}>
+              <p style={styles.pTag}>
+                <strong>Order ID:</strong> {orderDetails.order_id}
+              </p>
+              <p style={styles.pTag}>
+                <strong>Purchase Order:</strong> {orderDetails.purchase_order}
+              </p>
+              <p style={styles.pTag}>
+                <strong>Supplier:</strong> {orderDetails.supplier.name}
+              </p>
+              <p style={styles.pTag}>
+                <strong>Buyer:</strong> {orderDetails.buyer.name}
+              </p>
+            </div>
+
+            {/* Right Side */}
+            <div style={styles.rightColumn}>
+              <p style={styles.pTag}>
+                <strong>Order Date:</strong> {orderDetails.order_date}
+              </p>
+              <p style={styles.pTag}>
+                <strong>Exp. Delivery:</strong>{" "}
+                {orderDetails.expected_delivery_date}
+              </p>
+              <p style={styles.pTag}>
+                <strong>Order Value:</strong> ${orderDetails.order_value}
+              </p>
+            </div>
+          </div>
+        </div>}
       <h1 style={styles.heading}>
         Email Threads for Order {orderId}
       </h1>
@@ -124,6 +200,38 @@ const styles = {
     textDecoration: "none",
     color: "#007BFF",
     fontWeight: "bold"
+  },
+  orderCard: {
+    border: "1px solid #ddd", // Subtle border
+    borderRadius: "6px", // Slight rounding
+    padding: "10px", // Compact padding
+    boxShadow: "0px 1px 3px rgba(0, 0, 0, 0.1)" // Light shadow
+  },
+  gridContainer: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr", // Two equal columns
+    columnGap: "15px", // Smaller gap between columns
+    rowGap: "8px" // Compact row spacing
+  },
+  leftColumn: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px" // Tighter spacing for compactness
+  },
+  rightColumn: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px" // Tighter spacing for compactness
+  },
+  bottomRow: {
+    marginTop: "10px",
+    borderTop: "1px solid #eee", // Subtle divider
+    paddingTop: "8px",
+    textAlign: "left"
+  },
+  pTag: {
+    margin: "2px 0", // Reduced top and bottom margin
+    lineHeight: "1.4" // Adjust line height for readability
   }
 };
 
