@@ -1,0 +1,79 @@
+{
+    "order_id": "ORD12345",
+    "purchase_order_number": "PO56789",
+    "supplier": {
+        "name": "ABC Supplies",
+        "email": "supplier@example.com",
+        "phone": "+1-234-567-8901"
+    },
+    "buyer": {
+        "name": "XYZ Corp",
+        "contact_person": "John Doe",
+        "email": "buyer@example.com",
+        "phone": "+1-345-678-9012"
+    },
+    "order_date": "2024-11-01",
+    "expected_delivery_date": "2024-11-15",
+    "order_value": 5000.00,
+    "items": [
+        {
+            "product_name": "Widget A",
+            "quantity": 10,
+            "unit_price": 100.00
+        },
+        {
+            "product_name": "Widget B",
+            "quantity": 5,
+            "unit_price": 200.00
+        }
+    ],
+    "shipping": {
+        "address": "123 Main St, Springfield, USA",
+        "tracking_number": "TRK123456789",
+        "carrier": "FedEx"
+    },
+    "status": {
+        "order_status": "Delivered",
+        "payment_status": "Paid"
+    },
+    "issues": [
+        {
+            "type": "Damaged Item",
+            "description": "Widget A was damaged during transit.",
+            "resolution": "Replacement shipped."
+        }
+    ],
+    "email_threads": [
+        {
+            "email_id": "1",
+            "subject": "Order #12345 - Confirmation",
+            "body": "Your order has been confirmed. Expected delivery date is Nov 15, 2024.",
+            "from": "supplier@example.com",
+            "to": "buyer@example.com",
+            "timestamp": "2024-11-01T10:00:00Z",
+            "attachments": []
+        },
+        {
+            "email_id": "2",
+            "subject": "Order #12345 - Shipment",
+            "body": "Your order has been shipped. Tracking number: TRK123456789.",
+            "from": "supplier@example.com",
+            "to": "buyer@example.com",
+            "timestamp": "2024-11-10T10:00:00Z",
+            "attachments": [
+                "shipping_label.pdf"
+            ]
+        },
+        {
+            "email_id": "3",
+            "subject": "Order #12345 - Issue Raised",
+            "body": "There is an issue with the order. Widget A was damaged.",
+            "from": "buyer@example.com",
+            "to": "supplier@example.com",
+            "timestamp": "2024-11-16T15:00:00Z",
+            "attachments": [
+                "photo_of_damage.jpg"
+            ]
+        }
+    ]
+}

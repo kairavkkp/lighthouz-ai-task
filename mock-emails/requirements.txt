@@ -1,0 +1,6 @@
+unstructured[pdf]
+langchain_community
+msal
+requests
+faker
+reportlab

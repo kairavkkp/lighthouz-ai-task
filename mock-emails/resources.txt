@@ -1,0 +1,3 @@
+- Ollama with Langchain: https://python.langchain.com/docs/integrations/llms/ollama/
+- Email DataLoader: https://python.langchain.com/docs/integrations/document_loaders/email/#using-unstructured
+- Multimodal Ollama - https://ollama.com/library/llava
