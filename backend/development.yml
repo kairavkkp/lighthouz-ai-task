@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: lighthouz
+      MONGO_INITDB_ROOT_PASSWORD: lighthouz
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - mongo-network
+
+volumes:
+  mongo_data:
+
+networks:
+  mongo-network:
