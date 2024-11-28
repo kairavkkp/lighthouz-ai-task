@@ -4,12 +4,7 @@ from email.parser import BytesParser
 from prompt import PROMPT
 from constants import s3_client, llm_openai_client, S3_BUCKET_NAME
 from langchain_community.document_loaders import UnstructuredEmailLoader
-from langchain.schema.runnable import RunnableSequence
 from langchain_core.prompts import PromptTemplate
-
-
-# from langchain.prompts import PromptTemplate
-# from langchain.chains import LLMChain
 
 
 def download_eml_files_from_s3(prefix, local_download_path):
@@ -31,27 +26,6 @@ def convert_to_langchain_document(path):
     loader = UnstructuredEmailLoader(path)
     data = loader.load()
     return data
-
-
-def parse_eml(file_path):
-    """Parse .eml file and extract subject and body."""
-
-    with open(file_path, "rb") as f:
-        msg = BytesParser(policy=policy.default).parse(f)
-
-    subject = msg["subject"]
-    body = None
-
-    # Extract body from plain text parts
-    if msg.is_multipart():
-        for part in msg.iter_parts():
-            if part.get_content_type() == "text/plain":
-                body = part.get_content().strip()
-                break
-    else:
-        body = msg.get_content().strip()
-
-    return subject, body
 
 
 def lambda_handler(event, context):

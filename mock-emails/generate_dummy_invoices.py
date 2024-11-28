@@ -68,25 +68,28 @@ def save_invoice_as_pdf(invoice, output_dir="invoices_pdf"):
     pdf.drawString(50, 750, "INVOICE")
     pdf.setFont("Helvetica", 12)
     pdf.drawString(50, 730, f"Invoice ID: {invoice['invoice_id']}")
+    pdf.drawString(50, 710, f"Order ID: {invoice['order_id']}")
+    pdf.drawString(50, 690, f"Purchase Order: {invoice['purchase_order']}")
+
     pdf.drawString(400, 730, f"Order Date: {invoice['order_date']}")
     pdf.drawString(400, 710, f"Exp. Delivery: {invoice['expected_delivery_date']}")
 
     # Supplier and Buyer Details
     pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(50, 680, "Supplier Information")
+    pdf.drawString(50, 670, "Supplier Information")
     pdf.setFont("Helvetica", 10)
-    pdf.drawString(50, 660, f"Name: {invoice['supplier']['name']}")
-    pdf.drawString(50, 645, f"Email: {invoice['supplier']['email']}")
-    pdf.drawString(50, 630, f"Phone: {invoice['supplier']['phone']}")
-    render_multiline_text(pdf, 50, 615, f"Address: {invoice['supplier']['address']}", 30)
+    pdf.drawString(50, 650, f"Name: {invoice['supplier']['name']}")
+    pdf.drawString(50, 635, f"Email: {invoice['supplier']['email']}")
+    pdf.drawString(50, 620, f"Phone: {invoice['supplier']['phone']}")
+    render_multiline_text(pdf, 50, 605, f"Address: {invoice['supplier']['address']}", 30)
 
     pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(300, 680, "Buyer Information")
+    pdf.drawString(300, 670, "Buyer Information")
     pdf.setFont("Helvetica", 10)
-    pdf.drawString(300, 660, f"Name: {invoice['buyer']['name']}")
-    pdf.drawString(300, 645, f"Email: {invoice['buyer']['email']}")
-    pdf.drawString(300, 630, f"Phone: {invoice['buyer']['phone']}")
-    render_multiline_text(pdf, 300, 615, f"Address: {invoice['buyer']['address']}", 30)
+    pdf.drawString(300, 650, f"Name: {invoice['buyer']['name']}")
+    pdf.drawString(300, 635, f"Email: {invoice['buyer']['email']}")
+    pdf.drawString(300, 620, f"Phone: {invoice['buyer']['phone']}")
+    render_multiline_text(pdf, 300, 605, f"Address: {invoice['buyer']['address']}", 30)
 
     # Line Items Table
     table_data = [["Item Name", "Item Code", "Quantity", "Price/Unit", "Total Price"]]
