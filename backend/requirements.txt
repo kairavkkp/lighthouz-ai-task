@@ -1,3 +1,8 @@
+boto3
 flask
 pymongo
 dnspython
+langchain-community
+openai
+langchain-openai
+unstructured[pdf]
