@@ -19,6 +19,7 @@
 - [x] Flask: GET APIs for fetching the Orders and Order Email Threads
 - [x] React: Page for Listing all the Active Orders with relevant Details.
 - [x] React: Page for Listing the specific Order details alongwith Email Threads.
+- [ ] Deploy everything on Cloud for testing.
 
 ## Flows
 
