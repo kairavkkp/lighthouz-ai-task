@@ -2,9 +2,10 @@ import os
 import boto3
 from langchain_openai import ChatOpenAI
 from pymongo import MongoClient
-from constants import MONGO_URI, MONGO_DBNAME
 
 # MongoDB Configuration
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DBNAME = os.getenv("MONGO_DBNAME")
 mongo_client = MongoClient(MONGO_URI)
 db = mongo_client[MONGO_DBNAME]
 test_collection = db["test"]
