@@ -1,6 +1,7 @@
 import os
 import boto3
 from langchain_openai import ChatOpenAI
+from langchain_openai.embeddings import OpenAIEmbeddings
 from pymongo import MongoClient
 
 # MongoDB Configuration
@@ -19,3 +20,4 @@ s3_client = boto3.client("s3", region_name="ap-south-1")
 # OpenAI Configuration
 OPENAI_KEY = os.getenv("OPENAI_KEY")
 llm_openai_client = ChatOpenAI(openai_api_key=OPENAI_KEY, model_name="gpt-4o-mini")
+embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_KEY)

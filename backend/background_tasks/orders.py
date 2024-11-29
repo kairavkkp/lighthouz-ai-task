@@ -1,7 +1,9 @@
 import json
 import os
 from email import message_from_file
+from email.message import Message
 from email.utils import parsedate_to_datetime
+from utils.match import match_order_from_email
 from langchain_core.prompts import PromptTemplate
 from langchain_community.document_loaders import UnstructuredEmailLoader
 from settings import s3_client, llm_openai_client, orders_collection, order_email_threads_collection
@@ -76,6 +78,11 @@ def extract_email_metadata(eml_file_path):
         subject = msg.get("Subject")
         timestamp = msg.get("Date")
 
+        # Check for attachments
+        has_attachments = any(
+            part.get_content_disposition() == "attachment" for part in msg.walk() if isinstance(part, Message)
+        )
+
         # Parse timestamp into a datetime object
         parsed_timestamp = None
         if timestamp:
@@ -84,7 +91,13 @@ def extract_email_metadata(eml_file_path):
             except Exception as e:
                 print(f"Error parsing timestamp: {e}")
 
-        return {"from_email": from_email, "to_email": to_email, "subject": subject, "timestamp": parsed_timestamp}
+        return {
+            "from_email": from_email,
+            "to_email": to_email,
+            "subject": subject,
+            "timestamp": parsed_timestamp,
+            "has_attachments": has_attachments,
+        }
     except FileNotFoundError:
         print(f"File not found: {eml_file_path}")
         return {}
@@ -119,7 +132,7 @@ def delete_local_file(file_path):
         return False
 
 
-def upsert_order(order_data):
+def insert_order_if_not_exists(order_data):
     """
     Updates or inserts a document in the 'order' collection based on `order_id` and `supplier.name`.
 
@@ -134,7 +147,7 @@ def upsert_order(order_data):
         result = orders_collection.update_one(
             filter_criteria,
             {"$set": order_data},
-            upsert=True,
+            upsert=False,
         )
 
         if result.matched_count > 0:
@@ -177,60 +190,64 @@ def extract_data_for_order(data):
     # Parse Email Metadata
     email_metadata = extract_email_metadata(eml_file_path=eml_file_path)
 
-    # Parse .eml files as Documents
-    documents = None
-    documents = convert_to_langchain_document(path=eml_file_path)
-    print("DEBUG: documents: ", documents)
+    if email_metadata.get("has_attachments"):
+        # Parse .eml files as Documents
+        documents = None
+        documents = convert_to_langchain_document(path=eml_file_path)
+        print("DEBUG: documents: ", documents)
 
-    # Delete the files locally to avoid storage/memory leaks
-    for eml_file_path in eml_file_paths:
-        delete_local_file(file_path=eml_file_path)
+        # Create a Prompt Template for OpenAI
+        prompt_template = PromptTemplate(
+            input_variables=["prompt", "document_content"],
+            template="""
+            {prompt}\n\n{document_content}
+            """,
+        )
 
-    # Create a Prompt Template for OpenAI
-    prompt_template = PromptTemplate(
-        input_variables=["prompt", "document_content"],
-        template="""
-        {prompt}\n\n{document_content}
-        """,
-    )
+        # Define a chain to process the document content
+        doc = documents[0]
+        chain = prompt_template | llm_openai_client
+        summary = chain.invoke({"document_content": doc.page_content, "prompt": ORDER_DATA_EXTRACTION_PROMPT})
 
-    # Define a chain to process the document content
-    doc = documents[0]
-    chain = prompt_template | llm_openai_client
-    summary = chain.invoke({"document_content": doc.page_content, "prompt": ORDER_DATA_EXTRACTION_PROMPT})
+        # Output the results
+        print("Source:", doc.metadata["source"])
+        print("Summary:", summary)
+        order_summary_dict = json.loads(summary.content)
+        email_summary = order_summary_dict.get("email_summary")
+        order_status = order_summary_dict.get("order_status")
+        order_id = order_summary_dict.get("order_id")
+        # Deleting Email Summary as its a part of Email Thread and not Order object.
+        try:
+            del order_summary_dict["email_summary"]
+        except Exception:
+            pass
 
-    # Output the results
-    print("Source:", doc.metadata["source"])
-    print("Summary:", summary)
-    order_summary_dict = json.loads(summary.content)
-    email_summary = order_summary_dict.get("email_summary")
-    order_status = order_summary_dict.get("order_status")
-    order_id = order_summary_dict.get("order_id")
-    # Deleting Email Summary as its a part of Email Thread and not Order object.
-    try:
-        del order_summary_dict["email_summary"]
-    except Exception:
-        pass
+        order_summary_string = json.dumps(order_summary_dict)
+        order_summary_byte_data = order_summary_string.encode("utf-8")
 
-    order_summary_string = json.dumps(order_summary_dict)
-    order_summary_byte_data = order_summary_string.encode("utf-8")
+        # Save the file back to S3 for later operations if required.
+        s3_summary_file_key = os.path.join(email_file_path, "summary.json")
+        s3_client.put_object(Bucket=s3_bucket_name, Key=s3_summary_file_key, Body=order_summary_byte_data)
 
-    # Save the file back to S3 for later operations if required.
-    s3_summary_file_key = os.path.join(email_file_path, "summary.json")
-    s3_client.put_object(Bucket=s3_bucket_name, Key=s3_summary_file_key, Body=order_summary_byte_data)
+        # Upsert Order Object if it exists
+        _ = insert_order_if_not_exists(order_data=order_summary_dict)
 
-    # Upsert Order Object if it exists
-    _ = upsert_order(order_data=order_summary_dict)
+    best_matched_order = match_order_from_email(eml_file_path)
+    print("DEBUG: best_matched_order: ", best_matched_order)
+    best_matched_order_id = best_matched_order.get("order").get("order_id")
+    email_summary = best_matched_order.get("email_summary")
 
     # Add Communication for the Email Thread in the collection.
     email_metadata.update(
         {
-            "order_id": order_id,
+            "order_id": best_matched_order_id,
             "attachments": attachment_file_list,
-            "order_status": order_status,
             "email_summary": email_summary,
         }
     )
     _ = order_email_threads_collection.insert_one(email_metadata)
 
+    # Delete the files locally to avoid storage/memory leaks
+    for eml_file_path in eml_file_paths:
+        delete_local_file(file_path=eml_file_path)
     return
