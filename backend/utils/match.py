@@ -66,6 +66,7 @@ def match_order_from_email(eml_file_path):
         order_vectors.append(order_vector)
 
     email_data = parse_eml(file_path=eml_file_path)
+    print("DEBUG:email_data: ", email_data)
     summary_content = extract_features(email_data["body"])
     email_vector = embeddings.embed_query(summary_content)
 

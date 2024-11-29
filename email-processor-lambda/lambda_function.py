@@ -60,13 +60,14 @@ def mark_email_as_read(access_token, message_id):
 
 
 def create_eml_and_save_to_s3(message_id, access_token, email_data, bucket_name, s3_file_key, email_uuid):
+    print("DEBUG: email_data:", email_data)
     # Extract necessary fields from the email data
     from_email = email_data["from"]["emailAddress"]["address"]
-    to_email = ", ".join([recipient["emailAddress"]["address"] for recipient in email_data["toRecipients"]])
-    subject = email_data["subject"]
-    body = email_data["body"]["content"]
+    to_email = ", ".join([recipient["emailAddress"]["address"] for recipient in email_data.get("toRecipients", [])])
+    subject = email_data.get("subject", "No Subject")
+    body = email_data["body"].get("content", "No content available.")
     sent_date = email_data.get("sentDateTime", datetime.now().strftime("%a, %d %b %Y %H:%M:%S +0000"))
-    has_attachments = email_data["hasAttachments"]
+    has_attachments = email_data.get("hasAttachments", False)
 
     # Create an EmailMessage object
     msg = EmailMessage()
@@ -75,11 +76,8 @@ def create_eml_and_save_to_s3(message_id, access_token, email_data, bucket_name,
     msg["Subject"] = subject
     msg["Date"] = sent_date
 
-    # Add the email body
-    if email_data["body"]["contentType"] == "html":
-        msg.add_alternative(body, subtype="html")
-    else:
-        msg.set_content(body)
+    # Handle body content
+    msg.set_content(body)
 
     # Handle attachments
     if has_attachments:
@@ -89,21 +87,32 @@ def create_eml_and_save_to_s3(message_id, access_token, email_data, bucket_name,
             content_type = attachment["contentType"]
             attachment_data = base64.b64decode(attachment["contentBytes"])
 
+            # # Add attachment to the email
+            msg.add_attachment(
+                attachment_data,
+                maintype=content_type.split("/")[0],
+                subtype=content_type.split("/")[1],
+                filename=filename,
+            )
+
             # Generate S3 key (path)
             attachment_s3_key = f"{email_uuid}/attachments/{filename}"
 
             # Upload the attachment to S3
             s3_client.put_object(
-                Bucket=bucket_name, Key=attachment_s3_key, Body=attachment_data, ContentType=content_type
+                Bucket=bucket_name,
+                Key=attachment_s3_key,
+                Body=attachment_data,
+                ContentType=content_type,
             )
 
-        print(f"Attachment {filename} saved to S3 at {attachment_s3_key}")
+            print(f"Attachment {filename} saved to S3 at {attachment_s3_key}")
 
     # Convert to .eml format
     eml_content = msg.as_bytes()
 
     # Save to S3
-    s3_client.put_object(Bucket=bucket_name, Key=s3_file_key, Body=eml_content, ContentType="message/rfc822")
+    s3_client.put_object(Bucket=bucket_name, Key=s3_file_key, Body=eml_content, ContentType="text/plain")
 
     print(f"Email saved to S3 at {s3_file_key}")
 

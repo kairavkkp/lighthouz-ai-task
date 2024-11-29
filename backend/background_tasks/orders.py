@@ -38,7 +38,7 @@ def process_attachments(s3_bucket_name, prefix):
     # Generate public URIs for each file
     for obj in response["Contents"]:
         file_key = obj["Key"]
-        public_uri = f"https://{s3_bucket_name}.{aws_region}.amazonaws.com/{file_key}"
+        public_uri = f"https://{s3_bucket_name}.s3.{aws_region}.amazonaws.com/{file_key}"
         public_uris.append(public_uri)
 
     return public_uris
@@ -124,14 +124,15 @@ def insert_order_if_not_exists(order_data):
     :param order_data: The JSON data to upsert
     """
     try:
+        print("DEBUG: ", order_data)
         # Define the filter based on `order_id` and `supplier.name`
         filter_criteria = {"order_id": order_data["order_id"], "supplier.name": order_data["supplier"]["name"]}
 
         # Use update_one with upsert=True
         result = orders_collection.update_one(
             filter_criteria,
-            {"$set": order_data},
-            upsert=False,
+            {"$setOnInsert": order_data},
+            upsert=True,
         )
 
         if result.matched_count > 0:
@@ -167,12 +168,13 @@ def extract_data_for_order(data):
     eml_file_path = eml_file_paths[0]
 
     # Parse Attachments
-    attachment_file_list = process_attachments(s3_bucket_name=s3_bucket_name, prefix=email_file_path)
-
+    attachment_file_list = process_attachments(
+        s3_bucket_name=s3_bucket_name, prefix=os.path.join(email_file_path, "attachments")
+    )
     # Parse Email Metadata
     email_metadata = extract_email_metadata(eml_file_path=eml_file_path)
-
-    if email_metadata.get("has_attachments"):
+    order = None
+    if len(attachment_file_list) > 0:
         # Parse .eml files as Documents
         documents = None
         documents = convert_to_langchain_document(path=eml_file_path)
@@ -195,6 +197,7 @@ def extract_data_for_order(data):
         print("Source:", doc.metadata["source"])
         print("Summary:", summary)
         order_summary_dict = json.loads(summary.content)
+        order = order_summary_dict
 
         # Deleting Email Summary as its a part of Email Thread and not Order object.
         try:
@@ -210,12 +213,19 @@ def extract_data_for_order(data):
         s3_client.put_object(Bucket=s3_bucket_name, Key=s3_summary_file_key, Body=order_summary_byte_data)
 
         # Upsert Order Object if it exists
-        _ = insert_order_if_not_exists(order_data=order_summary_dict)
+        if order_summary_dict.get("order_id") is not None:
+            _ = insert_order_if_not_exists(order_data=order_summary_dict)
+        else:
+            order = None
 
-    best_matched_order = match_order_from_email(eml_file_path)
-    print("DEBUG: best_matched_order: ", best_matched_order)
-    best_matched_order_id = best_matched_order.get("order").get("order_id")
-    email_summary = best_matched_order.get("email_summary")
+    if order is None:
+        best_matched_order = match_order_from_email(eml_file_path)
+        print("DEBUG: best_matched_order: ", best_matched_order)
+        best_matched_order_id = best_matched_order.get("order").get("order_id")
+        email_summary = best_matched_order.get("email_summary")
+    else:
+        best_matched_order_id = order.get("order_id")
+        email_summary = order.get("email_summary")
 
     # Add Communication for the Email Thread in the collection.
     email_metadata.update(
