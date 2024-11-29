@@ -1,0 +1,3 @@
+msal
+boto3
+requests
