@@ -14,8 +14,9 @@ orders_collection = db["orders"]
 order_email_threads_collection = db["order-email-threads"]
 
 # S3 Config
+aws_region = "ap-south-1"
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
-s3_client = boto3.client("s3", region_name="ap-south-1")
+s3_client = boto3.client("s3", region_name=aws_region)
 
 # OpenAI Configuration
 OPENAI_KEY = os.getenv("OPENAI_KEY")

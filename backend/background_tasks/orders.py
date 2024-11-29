@@ -6,7 +6,7 @@ from email.utils import parsedate_to_datetime
 from utils.match import match_order_from_email
 from langchain_core.prompts import PromptTemplate
 from langchain_community.document_loaders import UnstructuredEmailLoader
-from settings import s3_client, llm_openai_client, orders_collection, order_email_threads_collection
+from settings import s3_client, llm_openai_client, orders_collection, order_email_threads_collection, aws_region
 from prompts.order_extraction_prompt import ORDER_DATA_EXTRACTION_PROMPT
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
@@ -25,39 +25,23 @@ def download_eml_files_from_s3(s3_bucket_name, s3_file_key, local_download_path)
     return local_files
 
 
-def process_attachments(eml_file_path, s3_bucket_name, prefix):
-    uploaded_files = []
-    try:
-        with open(eml_file_path, "r") as eml_file:
-            msg = message_from_file(eml_file)
-        msg = message_from_file(eml_file)
+def process_attachments(s3_bucket_name, prefix):
+    public_uris = []
 
-        # Extract attachments
-        for part in msg.walk():
-            # Check if the part is an attachment
-            if part.get_content_disposition() == "attachment":
-                file_name = part.get_filename()
+    response = s3_client.list_objects_v2(Bucket=s3_bucket_name, Prefix=prefix)
 
-                if file_name:
-                    # Read attachment data
-                    file_data = part.get_payload(decode=True)
-                    # Upload to S3
-                    s3_key = os.path.join(prefix, f"attachments/{file_name}")
-                    s3_client.put_object(Bucket=s3_bucket_name, Key=s3_key, Body=file_data)
-                    print(f"Uploaded: {file_name} to S3 as {s3_key}")
-                    uploaded_files
-        if not uploaded_files:
-            print("No attachments found in the EML file.")
-    except FileNotFoundError:
-        print(f"File not found: {eml_file_path}")
-    except NoCredentialsError:
-        print("AWS credentials not available.")
-    except PartialCredentialsError:
-        print("Incomplete AWS credentials configuration.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    # Check if objects are present
+    if "Contents" not in response:
+        print(f"No files found under prefix: {prefix}")
+        return public_uris
 
-    return
+    # Generate public URIs for each file
+    for obj in response["Contents"]:
+        file_key = obj["Key"]
+        public_uri = f"https://{s3_bucket_name}.{aws_region}.amazonaws.com/{file_key}"
+        public_uris.append(public_uri)
+
+    return public_uris
 
 
 def extract_email_metadata(eml_file_path):
@@ -183,9 +167,7 @@ def extract_data_for_order(data):
     eml_file_path = eml_file_paths[0]
 
     # Parse Attachments
-    attachment_file_list = process_attachments(
-        eml_file_path=eml_file_path, s3_bucket_name=s3_bucket_name, prefix=email_file_path
-    )
+    attachment_file_list = process_attachments(s3_bucket_name=s3_bucket_name, prefix=email_file_path)
 
     # Parse Email Metadata
     email_metadata = extract_email_metadata(eml_file_path=eml_file_path)

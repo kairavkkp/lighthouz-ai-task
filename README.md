@@ -6,7 +6,7 @@
   - `openai-langchain`
   - `outlook-emails`
   - `data-extractor`
-
+- `email-processor-lambda` Lambda to process Emails from Outlook.
 - `matching-poc` Code Snippets for Matching logic.
 - `mock-emails` contains the scripts for generating dummy invoices with `faker` for testing.
 - `backend` - Flask Based API Webserver
