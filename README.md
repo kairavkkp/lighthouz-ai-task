@@ -7,6 +7,7 @@
   - `outlook-emails`
   - `data-extractor`
 
+- `matching-poc` Code Snippets for Matching logic.
 - `mock-emails` contains the scripts for generating dummy invoices with `faker` for testing.
 - `backend` - Flask Based API Webserver
 - `frontend` - ReactJS based frontend [I've used JS instead of Typescript since it was a task]
@@ -20,6 +21,22 @@
 - [x] React: Page for Listing all the Active Orders with relevant Details.
 - [x] React: Page for Listing the specific Order details alongwith Email Threads.
 - [ ] Deploy everything on Cloud for testing.
+
+## Matching Logic
+
+- Assuming that first email would have the Order Invoice in it, which creates a base record.
+- So, considering any email from the second conversation, assuming that each order's lifespan is at most 4 weeks, fetch all the orders between today and 4 weeks ago.
+- Gather Order Details and convert them into single line records and convert it to OpenAI embeddings for ease of matching later with similarity score.
+- Typically in any order update emails, there would be at least a few details for any of the following attributes, there maybe one thing present or maybe more, but not all:
+  - Order ID
+  - Purchase Order
+  - Dates
+  - Customer Details
+  - Supplier Details
+  - Product Details
+- Use OpenAI to prepare a statement/summary based on Email Content. Prepare embeddings for the Email Summary response as well.
+- Prepare a similarity map with dot product between Order Embeddings and Email Content Embeddings.
+- Use the Best match score and use the order from the original list of Orders.
 
 ## Flows
 
