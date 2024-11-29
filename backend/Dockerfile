@@ -5,10 +5,9 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /code
 
+COPY . /code/
+
 RUN python -m venv /venv
-COPY requirements.txt /code/
-RUN /venv/bin/pip install torch==2.5.0 --index-url https://download.pytorch.org/whl/cpu
 RUN /venv/bin/pip install --no-cache-dir -r requirements.txt
 
-COPY . /code/
 ENV PATH="/venv/bin:$PATH"
