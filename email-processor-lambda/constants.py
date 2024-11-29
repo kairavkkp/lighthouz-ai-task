@@ -6,6 +6,7 @@ CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 TENANT_ID = os.getenv("TENANT_ID")
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+API_BASE_URL = os.getenv("API_BASE_URL")
 
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
 SCOPES = ["https://graph.microsoft.com/.default"]

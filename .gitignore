@@ -194,3 +194,5 @@ sketch
 
 mock-emails/invoices_pdf/*
 mock-emails/dummy_invoices.json
+
+**/deploy.zip

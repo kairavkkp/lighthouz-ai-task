@@ -4,7 +4,7 @@ import os
 import uuid
 import requests
 from email.message import EmailMessage
-from constants import SCOPES, READ_EMAILS_FROM, SPECIFIC_EMAIL, S3_BUCKET_NAME, msal_client, s3_client
+from constants import SCOPES, READ_EMAILS_FROM, SPECIFIC_EMAIL, S3_BUCKET_NAME, API_BASE_URL, msal_client, s3_client
 
 
 def fetch_unread_emails_from_sender(access_token, sender_email):
@@ -136,6 +136,10 @@ def lambda_handler(event, context):
             s3_file_key=s3_file_key,
             email_uuid=email_uuid,
         )
+        backend_response = requests.post(
+            f"{API_BASE_URL}/orders", json={"s3_file_key": s3_file_key, "s3_bucket_name": S3_BUCKET_NAME}
+        )
+        print("DEBUG: backend_response: ", backend_response)
         mark_email_as_read(access_token=access_token, message_id=message_id)
 
 
