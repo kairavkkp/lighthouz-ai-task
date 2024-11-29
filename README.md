@@ -46,7 +46,7 @@
 
 ### Backend Flow
 
-![Backend Flow](images/backend-flow.jpeg)
+![Backend Flow](images/backend-flow.png)
 
 ### Frontend Flow
 

@@ -213,9 +213,7 @@ def extract_data_for_order(data):
         print("Source:", doc.metadata["source"])
         print("Summary:", summary)
         order_summary_dict = json.loads(summary.content)
-        email_summary = order_summary_dict.get("email_summary")
-        order_status = order_summary_dict.get("order_status")
-        order_id = order_summary_dict.get("order_id")
+
         # Deleting Email Summary as its a part of Email Thread and not Order object.
         try:
             del order_summary_dict["email_summary"]
