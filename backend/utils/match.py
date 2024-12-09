@@ -59,7 +59,7 @@ def match_order_from_email(eml_file_path):
             f"Supplier Phone: {order['supplier']['phone']}, Supplier Address: {order['supplier']['address']}, "
             f"Buyer Name: {order['buyer']['name']}, Buyer Email: {order['buyer']['email']}, "
             f"Buyer Phone: {order['buyer']['phone']}, Buyer Address: {order['buyer']['address']}, "
-            f"Product Details: {order['line_items']}"
+            f"Product Details: {list(map(lambda obj: obj['item_name'], order['line_items']))}"
         )
         #  Create Embeddings for the Email and Order vectors
         order_vector = embeddings.embed_query(order_text)

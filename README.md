@@ -14,7 +14,7 @@
 
 ## Requirements Covered
 
-- [ ] Lambda: Fetch Emails from Outlook and store the `.eml` files from Outlook APIs
+- [x] Lambda: Fetch Emails from Outlook and store the `.eml` files from Outlook APIs
 - [x] Flask: Backend API to fetch the `.eml` files from S3 and process it using LangChain and extract info using OpenAI.
 - [x] Flask: Store Details about the Order and Email threads in MongoDB.
 - [x] Flask: GET APIs for fetching the Orders and Order Email Threads
